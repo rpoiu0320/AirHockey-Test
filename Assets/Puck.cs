@@ -1,53 +1,113 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class Puck : MonoBehaviour, IHittable
 {
-    [SerializeField] bool debug;
     [SerializeField] LayerMask layerMask;
-    [SerializeField] float rayDistance;
+    [SerializeField][Range(0f, 300f)] float rayDistance;
     private Rigidbody rb;
     private Vector3 lastPosition;
     private RaycastHit hit;
+    [SerializeField][Range(0f, 300f)] float velocitySpeed;
+    private int count = 1;
+
+    private void VelocitySpeed()
+    {
+        rb.velocity = new Vector3(velocitySpeed, 0, rb.velocity.z);
+    }
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        //Time.timeScale = 0.05f;
+    }
+
+    private void Start()
+    {
+        coroutine = StartCoroutine(WallCheckRoutine());
     }
 
     private void Update()
     {
         //WallCheck();
+        //Debug.Log(Time.deltaTime);
+        //lastPosition = transform.position;
+        //VelocitySpeed();
+        Debug.Log(rb.velocity);
     }
 
     private void FixedUpdate()
     {
-        lastPosition = transform.position;
-        WallCheck();
+        //Debug.Log("FixedUpdate");
+         lastPosition = transform.position;
+        //WallCheck();
     }
 
     private void LateUpdate()
     {
-       
+        //WallCheck();
     }
 
     private void WallCheck()
     {
+        //if (count != 1)
+        //    return;
+
+         
 
         var direct = (transform.position - lastPosition).normalized;
-
-        if (Physics.Raycast(transform.position, direct, rayDistance, layerMask))
+        var nowSpeed = transform.position + (direct * Time.deltaTime);
+        //Debug.Log(direct);
+        //if (Physics.Raycast(transform.position, direct, Vector3.Distance(transform.position, lastPosition), layerMask))
+        if (Physics.Raycast(transform.position, direct,out RaycastHit hitinfo ,rayDistance, layerMask))
         {
             Debug.Log("Puck Hit");
+            transform.position = lastPosition;
+
+
+            var colliderNormal = hitinfo.normal;
+            
+            var reflectVector = Vector3.Reflect(direct, colliderNormal);
+
+            rb.velocity = reflectVector * 5f;
+
+            //if (Mathf.Abs(rb.velocity.x) > Mathf.Abs(rb.velocity.z))
+            //{
+            //    rb.velocity = new Vector3(-rb.velocity.x, 0, rb.velocity.z);
+            //}
+            //else
+            //{
+            //    rb.velocity = new Vector3(rb.velocity.x, 0, -rb.velocity.z);
+
+            //}
+        }
+    }
+
+    Coroutine coroutine;
+    IEnumerator WallCheckRoutine()
+    {
+        Debug.Log("StartCoroutine");
+        while (true)
+        {
+            yield return new WaitForFixedUpdate();
+            WallCheck();
+            //yield return new WaitForFixedUpdate();
+
+
+            //VelocitySpeed();
         }
     }
 
     private void OnDrawGizmos()
     {
         var direct = (transform.position - lastPosition).normalized;
-        Gizmos.DrawRay(transform.position, direct *rayDistance);
+        Gizmos.DrawRay(transform.position, direct * Vector3.Distance(transform.position, lastPosition));
+        //Gizmos.DrawRay(transform.position, -direct * Vector3.Distance(transform.position, lastPosition));
+        //Gizmos.DrawRay(transform.position, direct * rayDistance);
+
     }
 
 

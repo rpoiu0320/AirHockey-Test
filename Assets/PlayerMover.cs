@@ -16,19 +16,34 @@ public class PlayerMover : MonoBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
-    private void Update()
+    void Update()
     {
-        Move();
-    }
+        if (Input.GetKey(KeyCode.LeftArrow))
+        {
+            rb.AddForce(-moveSpeed, 0, 0);
+        }
+        else if (Input.GetKey(KeyCode.RightArrow))
+        {
+            rb.AddForce(moveSpeed, 0, 0);
+        }
+        else if (Input.GetKey(KeyCode.UpArrow))
+        {
+            rb.AddForce(0, 0, moveSpeed);
+        }
+        else if (Input.GetKey(KeyCode.DownArrow))
+        {
+            rb.AddForce(0, 0, -moveSpeed);
+        }
 
-    private void Move()
-    {
-        rb.AddForce(moveDir * moveSpeed * Time.deltaTime, ForceMode.Force);
-    }
+        //    private void Move()
+        //{
+        //    rb.AddForce(moveDir * moveSpeed * Time.deltaTime, ForceMode.Force);
+        //}
 
-    private void OnMove(InputValue value)
-    {
-        moveDir.x = value.Get<Vector2>().x;
-        moveDir.z = value.Get<Vector2>().y;
+        //private void OnMove(InputValue value)
+        //{
+        //    moveDir.x = value.Get<Vector2>().x;
+        //    moveDir.z = value.Get<Vector2>().y;
+        //}
     }
 }
